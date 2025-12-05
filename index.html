@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tundra Race Checkpoint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .challenge-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .challenge-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .challenge-btn:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .challenge-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+        }
+
+        .challenge-section {
+            display: none;
+        }
+
+        .challenge-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .animal-card, .quiz-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .animal-card:hover, .quiz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .animal-card.selected-yes {
+            border: 3px solid #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .animal-card.selected-no {
+            border: 3px solid #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .animal-name, .quiz-question {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-yes {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-yes:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .btn-no {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-no:hover {
+            background: #da190b;
+            transform: scale(1.05);
+        }
+
+        .btn-option {
+            background: #2196F3;
+            color: white;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-option:hover {
+            background: #0b7dda;
+            transform: scale(1.05);
+        }
+
+        .btn-option.selected {
+            background: #667eea;
+            border: 3px solid #fff;
+        }
+
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .matching-column {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .matching-item {
+            background: #2196F3;
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .matching-item:hover {
+            transform: scale(1.05);
+            background: #0b7dda;
+        }
+
+        .matching-item.selected {
+            background: #667eea;
+            border: 3px solid #fff;
+        }
+
+        .matching-item.matched {
+            background: #4CAF50;
+            cursor: default;
+        }
+
+        .submit-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            display: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .score {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score.pass {
+            color: #4CAF50;
+        }
+
+        .score.fail {
+            color: #f44336;
+        }
+
+        .answer-list {
+            margin-top: 20px;
+        }
+
+        .answer-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .answer-item.correct {
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .answer-item.incorrect {
+            background: rgba(244, 67, 54, 0.2);
+        }
+
+        .progress {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.1em;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>❄️ CHECKPOINT: TUNDRA CHALLENGE ❄️</h1>
+            <p class="subtitle">Complete All Challenges to Continue!</p>
+        </header>
+
+        <div class="challenge-selector">
+            <button class="challenge-btn active" onclick="switchChallenge(1)">🦊 Animal ID</button>
+            <button class="challenge-btn" onclick="switchChallenge(2)">🌡️ Trivia Quiz</button>
+            <button class="challenge-btn" onclick="switchChallenge(3)">🔗 Matching</button>
+            <button class="challenge-btn" onclick="switchChallenge(4)">🌱 Plant ID</button>
+        </div>
+
+        <!-- Challenge 1: Animal Identification -->
+        <div id="challenge1" class="challenge-section active">
+            <div class="instructions">
+                <h2>🦊 Challenge 1: Animal Identification</h2>
+                <p>Identify which animals belong in the tundra biome. You need 12 out of 15 correct!</p>
+            </div>
+            <div class="progress">Answered: <span id="progress1">0</span> / 15</div>
+            <div class="challenge-grid" id="grid1"></div>
+            <div class="submit-section">
+                <button class="btn-submit" id="submit1" onclick="submitChallenge1()" disabled>Submit Answers</button>
+            </div>
+            <div class="results" id="results1"></div>
+        </div>
+
+        <!-- Challenge 2: Trivia Quiz -->
+        <div id="challenge2" class="challenge-section">
+            <div class="instructions">
+                <h2>🌡️ Challenge 2: Tundra Trivia</h2>
+                <p>Test your knowledge about the tundra! You need 7 out of 10 correct!</p>
+            </div>
+            <div class="progress">Answered: <span id="progress2">0</span> / 10</div>
+            <div class="challenge-grid" id="grid2"></div>
+            <div class="submit-section">
+                <button class="btn-submit" id="submit2" onclick="submitChallenge2()" disabled>Submit Answers</button>
+            </div>
+            <div class="results" id="results2"></div>
+        </div>
+
+        <!-- Challenge 3: Matching -->
+        <div id="challenge3" class="challenge-section">
+            <div class="instructions">
+                <h2>🔗 Challenge 3: Adaptation Matching</h2>
+                <p>Match each tundra animal with its survival adaptation! Click an animal, then click its adaptation.</p>
+            </div>
+            <div class="progress">Matched: <span id="progress3">0</span> / 6</div>
+            <div class="matching-grid" id="grid3"></div>
+            <div class="submit-section">
+                <button class="btn-submit" id="submit3" onclick="submitChallenge3()" disabled>Check Matches</button>
+            </div>
+            <div class="results" id="results3"></div>
+        </div>
+
+        <!-- Challenge 4: Plant Identification -->
+        <div id="challenge4" class="challenge-section">
+            <div class="instructions">
+                <h2>🌱 Challenge 4: Tundra Plants</h2>
+                <p>Identify which plants can survive in the tundra! You need 7 out of 10 correct!</p>
+            </div>
+            <div class="progress">Answered: <span id="progress4">0</span> / 10</div>
+            <div class="challenge-grid" id="grid4"></div>
+            <div class="submit-section">
+                <button class="btn-submit" id="submit4" onclick="submitChallenge4()" disabled>Submit Answers</button>
+            </div>
+            <div class="results" id="results4"></div>
+        </div>
+    </div>
+
+    <script>
+        // Challenge 1 Data
+        const animals = [
+            { name: "Arctic Fox", tundra: true },
+            { name: "Polar Bear", tundra: true },
+            { name: "Lion", tundra: false },
+            { name: "Caribou (Reindeer)", tundra: true },
+            { name: "Musk Ox", tundra: true },
+            { name: "Tiger", tundra: false },
+            { name: "Snowy Owl", tundra: true },
+            { name: "Lemming", tundra: true },
+            { name: "Elephant", tundra: false },
+            { name: "Arctic Hare", tundra: true },
+            { name: "Kangaroo", tundra: false },
+            { name: "Ptarmigan", tundra: true },
+            { name: "Giraffe", tundra: false },
+            { name: "Arctic Wolf", tundra: true },
+            { name: "Monkey", tundra: false }
+        ];
+
+        // Challenge 2 Data
+        const triviaQuestions = [
+            { question: "What is the average winter temperature in the tundra?", options: ["0°C to 10°C", "-30°C to -10°C", "10°C to 20°C", "-5°C to 5°C"], correct: 1 },
+            { question: "What does 'tundra' mean in Finnish?", options: ["Frozen land", "Treeless plain", "Cold desert", "Ice world"], correct: 1 },
+            { question: "How long is the tundra growing season?", options: ["9-12 months", "6-9 months", "3-6 months", "50-60 days"], correct: 3 },
+            { question: "What layer of permanently frozen soil is found in the tundra?", options: ["Cryosphere", "Permafrost", "Glacial layer", "Frozen substrate"], correct: 1 },
+            { question: "Which tundra type is found at high elevations?", options: ["Arctic tundra", "Antarctic tundra", "Alpine tundra", "Coastal tundra"], correct: 2 },
+            { question: "What percentage of Earth's land is tundra?", options: ["30%", "20%", "10%", "5%"], correct: 1 },
+            { question: "What is the main limiting factor for plant growth in tundra?", options: ["Water", "Sunlight", "Temperature & short growing season", "Soil nutrients"], correct: 2 },
+            { question: "What phenomenon gives 24-hour daylight in summer?", options: ["Solar flare", "Midnight sun", "Aurora borealis", "Polar day"], correct: 1 },
+            { question: "Which is NOT a tundra location?", options: ["Alaska", "Northern Canada", "Sahara Desert", "Siberia"], correct: 2 },
+            { question: "What type of precipitation is most common in tundra?", options: ["Rain", "Snow", "Hail", "Sleet"], correct: 1 }
+        ];
+
+        // Challenge 3 Data
+        const matchingData = {
+            animals: ["Arctic Fox", "Polar Bear", "Caribou", "Snowy Owl", "Musk Ox", "Ptarmigan"],
+            adaptations: ["White fur changes to brown in summer", "Thick blubber layer for insulation", "Wide hooves for walking on snow", "Silent flight feathers for hunting", "Long shaggy coat reaching ground", "Feathered feet for warmth"]
+        };
+        const correctMatches = [0, 1, 2, 3, 4, 5];
+
+        // Challenge 4 Data
+        const plants = [
+            { name: "Arctic Moss", tundra: true },
+            { name: "Cotton Grass", tundra: true },
+            { name: "Palm Tree", tundra: false },
+            { name: "Labrador Tea", tundra: true },
+            { name: "Bamboo", tundra: false },
+            { name: "Arctic Poppy", tundra: true },
+            { name: "Cactus", tundra: false },
+            { name: "Lichen", tundra: true },
+            { name: "Venus Flytrap", tundra: false },
+            { name: "Arctic Willow", tundra: true }
+        ];
+
+        // State
+        let userAnswers1 = {};
+        let userAnswers2 = {};
+        let userAnswers4 = {};
+        let selectedAnimal = null;
+        let selectedAdaptation = null;
+        let matches = [];
+
+        function switchChallenge(num) {
+            document.querySelectorAll('.challenge-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.challenge-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`challenge${num}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Initialize Challenge 1
+        function initChallenge1() {
+            const grid = document.getElementById('grid1');
+            animals.forEach((animal, index) => {
+                const card = document.createElement('div');
+                card.className = 'animal-card';
+                card.innerHTML = `
+                    <div class="animal-name">${animal.name}</div>
+                    <div class="button-group">
+                        <button class="btn btn-yes" onclick="selectAnswer1(${index}, true)">YES ✓</button>
+                        <button class="btn btn-no" onclick="selectAnswer1(${index}, false)">NO ✗</button>
+                    </div>
+                `;
+                card.id = `card1-${index}`;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectAnswer1(index, answer) {
+            userAnswers1[index] = answer;
+            const card = document.getElementById(`card1-${index}`);
+            card.className = 'animal-card';
+            card.classList.add(answer ? 'selected-yes' : 'selected-no');
+            document.getElementById('progress1').textContent = Object.keys(userAnswers1).length;
+            document.getElementById('submit1').disabled = Object.keys(userAnswers1).length < 15;
+        }
+
+        function submitChallenge1() {
+            let correct = 0;
+            const resultsHTML = [];
+            animals.forEach((animal, index) => {
+                const userAnswer = userAnswers1[index];
+                const isCorrect = userAnswer === animal.tundra;
+                if (isCorrect) correct++;
+                resultsHTML.push(`
+                    <div class="answer-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <span>${animal.name}</span>
+                        <span>${isCorrect ? '✓ Correct' : '✗ Wrong'} (${animal.tundra ? 'Tundra' : 'Not Tundra'})</span>
+                    </div>
+                `);
+            });
+            const passed = correct >= 12;
+            document.getElementById('results1').innerHTML = `
+                <div class="score ${passed ? 'pass' : 'fail'}">
+                    ${passed ? '🎉 CHALLENGE PASSED! 🎉' : '❌ TRY AGAIN'}
+                </div>
+                <h2 style="text-align: center;">Score: ${correct} / 15</h2>
+                <div class="answer-list">${resultsHTML.join('')}</div>
+            `;
+            document.getElementById('results1').classList.add('show');
+        }
+
+        // Initialize Challenge 2
+        function initChallenge2() {
+            const grid = document.getElementById('grid2');
+            triviaQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'quiz-card';
+                card.innerHTML = `
+                    <div class="quiz-question">${q.question}</div>
+                    <div class="button-group">
+                        ${q.options.map((opt, i) => `
+                            <button class="btn btn-option" onclick="selectAnswer2(${index}, ${i})">${opt}</button>
+                        `).join('')}
+                    </div>
+                `;
+                card.id = `card2-${index}`;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectAnswer2(qIndex, optIndex) {
+            userAnswers2[qIndex] = optIndex;
+            const card = document.getElementById(`card2-${qIndex}`);
+            card.querySelectorAll('.btn-option').forEach((btn, i) => {
+                btn.classList.toggle('selected', i === optIndex);
+            });
+            document.getElementById('progress2').textContent = Object.keys(userAnswers2).length;
+            document.getElementById('submit2').disabled = Object.keys(userAnswers2).length < 10;
+        }
+
+        function submitChallenge2() {
+            let correct = 0;
+            const resultsHTML = [];
+            triviaQuestions.forEach((q, index) => {
+                const userAnswer = userAnswers2[index];
+                const isCorrect = userAnswer === q.correct;
+                if (isCorrect) correct++;
+                resultsHTML.push(`
+                    <div class="answer-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <span>${q.question}</span>
+                        <span>${isCorrect ? '✓ Correct' : `✗ ${q.options[q.correct]}`}</span>
+                    </div>
+                `);
+            });
+            const passed = correct >= 7;
+            document.getElementById('results2').innerHTML = `
+                <div class="score ${passed ? 'pass' : 'fail'}">
+                    ${passed ? '🎉 CHALLENGE PASSED! 🎉' : '❌ TRY AGAIN'}
+                </div>
+                <h2 style="text-align: center;">Score: ${correct} / 10</h2>
+                <div class="answer-list">${resultsHTML.join('')}</div>
+            `;
+            document.getElementById('results2').classList.add('show');
+        }
+
+        // Initialize Challenge 3
+        function initChallenge3() {
+            const grid = document.getElementById('grid3');
+            grid.innerHTML = `
+                <div class="matching-column">
+                    <h3 style="text-align: center; margin-bottom: 15px; color: #333;">Animals</h3>
+                    ${matchingData.animals.map((animal, i) => `
+                        <div class="matching-item" id="animal-${i}" onclick="selectMatch('animal', ${i})">${animal}</div>
+                    `).join('')}
+                </div>
+                <div class="matching-column">
+                    <h3 style="text-align: center; margin-bottom: 15px; color: #333;">Adaptations</h3>
+                    ${matchingData.adaptations.map((adapt, i) => `
+                        <div class="matching-item" id="adapt-${i}" onclick="selectMatch('adapt', ${i})">${adapt}</div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function selectMatch(type, index) {
+            if (type === 'animal') {
+                if (document.getElementById(`animal-${index}`).classList.contains('matched')) return;
+                if (selectedAnimal !== null) {
+                    document.getElementById(`animal-${selectedAnimal}`).classList.remove('selected');
+                }
+                selectedAnimal = index;
+                document.getElementById(`animal-${index}`).classList.add('selected');
+            } else {
+                if (document.getElementById(`adapt-${index}`).classList.contains('matched')) return;
+                if (selectedAdaptation !== null) {
+                    document.getElementById(`adapt-${selectedAdaptation}`).classList.remove('selected');
+                }
+                selectedAdaptation = index;
+                document.getElementById(`adapt-${index}`).classList.add('selected');
+            }
+
+            if (selectedAnimal !== null && selectedAdaptation !== null) {
+                matches.push({ animal: selectedAnimal, adapt: selectedAdaptation });
+                document.getElementById(`animal-${selectedAnimal}`).classList.add('matched');
+                document.getElementById(`adapt-${selectedAdaptation}`).classList.add('matched');
+                document.getElementById(`animal-${selectedAnimal}`).classList.remove('selected');
+                document.getElementById(`adapt-${selectedAdaptation}`).classList.remove('selected');
+                selectedAnimal = null;
+                selectedAdaptation = null;
+                document.getElementById('progress3').textContent = matches.length;
+                document.getElementById('submit3').disabled = matches.length < 6;
+            }
+        }
+
+        function submitChallenge3() {
+            let correct = 0;
+            const resultsHTML = [];
+            matches.forEach(match => {
+                const isCorrect = match.animal === match.adapt;
+                if (isCorrect) correct++;
+                resultsHTML.push(`
+                    <div class="answer-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <span>${matchingData.animals[match.animal]} → ${matchingData.adaptations[match.adapt]}</span>
+                        <span>${isCorrect ? '✓' : '✗'}</span>
+                    </div>
+                `);
+            });
+            const passed = correct >= 5;
+            document.getElementById('results3').innerHTML = `
+                <div class="score ${passed ? 'pass' : 'fail'}">
+                    ${passed ? '🎉 CHALLENGE PASSED! 🎉' : '❌ TRY AGAIN'}
+                </div>
+                <h2 style="text-align: center;">Score: ${correct} / 6</h2>
+                <div class="answer-list">${resultsHTML.join('')}</div>
+            `;
+            document.getElementById('results3').classList.add('show');
+        }
+
+        // Initialize Challenge 4
+        function initChallenge4() {
+            const grid = document.getElementById('grid4');
+            plants.forEach((plant, index) => {
+                const card = document.createElement('div');
+                card.className = 'animal-card';
+                card.innerHTML = `
+                    <div class="animal-name">${plant.name}</div>
+                    <div class="button-group">
+                        <button class="btn btn-yes" onclick="selectAnswer4(${index}, true)">YES ✓</button>
+                        <button class="btn btn-no" onclick="selectAnswer4(${index}, false)">NO ✗</button>
+                    </div>
+                `;
+                card.id = `card4-${index}`;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectAnswer4(index, answer) {
+            userAnswers4[index] = answer;
+            const card = document.getElementById(`card4-${index}`);
+            card.className = 'animal-card';
+            card.classList.add(answer ? 'selected-yes' : 'selected-no');
+            document.getElementById('progress4').textContent = Object.keys(userAnswers4).length;
+            document.getElementById('submit4').disabled = Object.keys(userAnswers4).length < 10;
+        }
+
+        function submitChallenge4() {
+            let correct = 0;
+            const resultsHTML = [];
+            plants.forEach((plant, index) => {
+                const userAnswer = userAnswers4[index];
+                const isCorrect = userAnswer === plant.tundra;
+                if (isCorrect) correct++;
+                resultsHTML.push(`
+                    <div class="answer-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <span>${plant.name}</span>
+                        <span>${isCorrect ? '✓ Correct' : '✗ Wrong'} (${plant.tundra ? 'Tundra' : 'Not Tundra'})</span>
+                    </div>
+                `);
+            });
+            const passed = correct >= 7;
+            document.getElementById('results4').innerHTML = `
+                <div class="score ${passed ? 'pass' : 'fail'}">
+                    ${passed ? '🎉 CHALLENGE PASSED! 🎉' : '❌ TRY AGAIN'}
+                </div>
+                <h2 style="text-align: center;">Score: ${correct} / 10</h2>
+                <div class="answer-list">${resultsHTML.join('')}</div>
+            `;
+            document.getElementById('results4').classList.add('show');
+        }
+
+        // Initialize all challenges
+        initChallenge1();
+        initChallenge2();
+        initChallenge3();
+        initChallenge4();
+    </script>
+</body>
+</html>
