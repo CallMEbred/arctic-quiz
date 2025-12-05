@@ -440,6 +440,123 @@
             font-weight: bold;
         }
 
+        .final-summary-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a3a52;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            border: 3px solid rgba(26, 58, 82, 0.3);
+            animation: fadeSlide 0.8s ease;
+        }
+
+        .final-title {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #1a3a52;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        .final-subtitle {
+            font-size: 1.4em;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2d5f7f;
+            font-style: italic;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .summary-item {
+            background: rgba(26, 58, 82, 0.05);
+            padding: 25px;
+            border-radius: 5px;
+            border: 2px solid rgba(26, 58, 82, 0.2);
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .summary-item.passed {
+            background: rgba(46, 125, 50, 0.1);
+            border-color: #2e7d32;
+            animation: successPulse 2s ease-in-out infinite;
+        }
+
+        .summary-item.failed {
+            background: rgba(198, 40, 40, 0.1);
+            border-color: #c62828;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(46, 125, 50, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(46, 125, 50, 0.6); }
+        }
+
+        .summary-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a3a52;
+        }
+
+        .summary-status {
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .summary-item.passed .summary-status {
+            color: #2e7d32;
+            background: rgba(46, 125, 50, 0.15);
+        }
+
+        .summary-item.failed .summary-status {
+            color: #c62828;
+            background: rgba(198, 40, 40, 0.15);
+        }
+
+        .final-result {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(26, 58, 82, 0.08);
+            border-radius: 5px;
+            border: 3px solid rgba(26, 58, 82, 0.2);
+        }
+
+        .final-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .final-result.overall-pass .final-score {
+            color: #2e7d32;
+            animation: successGlow 1.5s ease-in-out infinite;
+        }
+
+        .final-result.overall-fail .final-score {
+            color: #c62828;
+        }
+
+        .final-message {
+            font-size: 1.3em;
+            text-align: center;
+            color: #2d5f7f;
+            line-height: 1.6;
+        }
+
         @media (max-width: 768px) {
             .matching-grid {
                 grid-template-columns: 1fr;
@@ -447,6 +564,14 @@
             
             h1 {
                 font-size: 2em;
+            }
+
+            .final-title {
+                font-size: 2em;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -458,11 +583,43 @@
             <p class="subtitle">Test Your Arctic Knowledge</p>
         </header>
 
-        <div class="challenge-selector">
+        <div class="challenge-selector" id="challengeSelector">
             <button class="challenge-btn active" onclick="switchChallenge(1)">Animal Identification</button>
             <button class="challenge-btn" onclick="switchChallenge(2)">Trivia Quiz</button>
             <button class="challenge-btn" onclick="switchChallenge(3)">Adaptation Matching</button>
             <button class="challenge-btn" onclick="switchChallenge(4)">Plant Identification</button>
+        </div>
+
+        <!-- Final Summary Screen -->
+        <div id="finalSummary" class="challenge-section">
+            <div class="final-summary-card">
+                <h2 class="final-title">Challenge Complete!</h2>
+                <div class="final-subtitle">You have finished all segments</div>
+                
+                <div class="summary-grid">
+                    <div class="summary-item" id="summary1">
+                        <div class="summary-name">Animal Identification</div>
+                        <div class="summary-status">Not Completed</div>
+                    </div>
+                    <div class="summary-item" id="summary2">
+                        <div class="summary-name">Trivia Quiz</div>
+                        <div class="summary-status">Not Completed</div>
+                    </div>
+                    <div class="summary-item" id="summary3">
+                        <div class="summary-name">Adaptation Matching</div>
+                        <div class="summary-status">Not Completed</div>
+                    </div>
+                    <div class="summary-item" id="summary4">
+                        <div class="summary-name">Plant Identification</div>
+                        <div class="summary-status">Not Completed</div>
+                    </div>
+                </div>
+
+                <div class="final-result" id="finalResult">
+                    <div class="final-score"></div>
+                    <div class="final-message"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Challenge 1: Animal Identification -->
@@ -577,7 +734,16 @@
             animals: ["Arctic Fox", "Polar Bear", "Caribou", "Snowy Owl", "Musk Ox", "Ptarmigan"],
             adaptations: ["White fur changes to brown in summer", "Thick blubber layer for insulation", "Wide hooves for walking on snow", "Silent flight feathers for hunting", "Long shaggy coat reaching ground", "Feathered feet for warmth"]
         };
-        const correctMatches = [0, 1, 2, 3, 4, 5];
+        
+        // Shuffle function
+        function shuffle(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
 
         // Challenge 4 Data
         const plants = [
@@ -600,12 +766,81 @@
         let selectedAnimal = null;
         let selectedAdaptation = null;
         let matches = [];
+        let challengeResults = {
+            1: null,
+            2: null,
+            3: null,
+            4: null
+        };
+        let challengeSubmitted = {
+            1: false,
+            2: false,
+            3: false,
+            4: false
+        };
+        let shuffledAnimals = [];
+        let shuffledAdaptations = [];
+        let animalIndexMap = {};
+        let adaptationIndexMap = {};
 
         function switchChallenge(num) {
             document.querySelectorAll('.challenge-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.challenge-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`challenge${num}`).classList.add('active');
             event.target.classList.add('active');
+        }
+
+        function checkAllCompleted() {
+            const completed = Object.values(challengeResults).every(result => result !== null);
+            if (completed) {
+                showFinalSummary();
+            }
+        }
+
+        function showFinalSummary() {
+            // Hide challenge selector and all challenge sections
+            document.getElementById('challengeSelector').style.display = 'none';
+            document.querySelectorAll('.challenge-section').forEach(s => s.classList.remove('active'));
+            
+            // Show final summary
+            document.getElementById('finalSummary').classList.add('active');
+
+            // Update summary items
+            let passedCount = 0;
+            for (let i = 1; i <= 4; i++) {
+                const summaryItem = document.getElementById(`summary${i}`);
+                const status = summaryItem.querySelector('.summary-status');
+                
+                if (challengeResults[i].passed) {
+                    summaryItem.classList.add('passed');
+                    status.textContent = `Passed (${challengeResults[i].score}/${challengeResults[i].total})`;
+                    passedCount++;
+                } else {
+                    summaryItem.classList.add('failed');
+                    status.textContent = `Failed (${challengeResults[i].score}/${challengeResults[i].total})`;
+                }
+            }
+
+            // Update final result
+            const finalResult = document.getElementById('finalResult');
+            const finalScore = finalResult.querySelector('.final-score');
+            const finalMessage = finalResult.querySelector('.final-message');
+            
+            finalScore.textContent = `${passedCount} / 4 Challenges Passed`;
+            
+            if (passedCount === 4) {
+                finalResult.classList.add('overall-pass');
+                finalMessage.textContent = 'Outstanding! You have successfully completed all challenges and proven your knowledge of the tundra biome. You may continue your journey.';
+            } else if (passedCount >= 3) {
+                finalResult.classList.add('overall-pass');
+                finalMessage.textContent = 'Well done! You have passed most of the challenges and demonstrated solid understanding of the tundra biome. You may proceed.';
+            } else {
+                finalResult.classList.add('overall-fail');
+                finalMessage.textContent = 'You need to pass at least 3 out of 4 challenges to complete this checkpoint. Please try again to continue your journey.';
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // Initialize Challenge 1
@@ -627,6 +862,7 @@
         }
 
         function selectAnswer1(index, answer) {
+            if (challengeSubmitted[1]) return;
             userAnswers1[index] = answer;
             const card = document.getElementById(`card1-${index}`);
             card.className = 'animal-card';
@@ -636,6 +872,8 @@
         }
 
         function submitChallenge1() {
+            if (challengeSubmitted[1]) return;
+            challengeSubmitted[1] = true;
             let correct = 0;
             const resultsHTML = [];
             animals.forEach((animal, index) => {
@@ -650,6 +888,7 @@
                 `);
             });
             const passed = correct >= 12;
+            challengeResults[1] = { passed: passed, score: correct, total: 15 };
             document.getElementById('results1').innerHTML = `
                 <div class="score ${passed ? 'pass' : 'fail'}">
                     ${passed ? 'Challenge Passed' : 'Try Again'}
@@ -658,7 +897,9 @@
                 <div class="answer-list">${resultsHTML.join('')}</div>
             `;
             document.getElementById('results1').classList.add('show');
+            document.getElementById('submit1').disabled = true;
             document.getElementById('results1').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            checkAllCompleted();
         }
 
         // Initialize Challenge 2
@@ -681,6 +922,7 @@
         }
 
         function selectAnswer2(qIndex, optIndex) {
+            if (challengeSubmitted[2]) return;
             userAnswers2[qIndex] = optIndex;
             const card = document.getElementById(`card2-${qIndex}`);
             card.querySelectorAll('.btn-option').forEach((btn, i) => {
@@ -691,6 +933,8 @@
         }
 
         function submitChallenge2() {
+            if (challengeSubmitted[2]) return;
+            challengeSubmitted[2] = true;
             let correct = 0;
             const resultsHTML = [];
             triviaQuestions.forEach((q, index) => {
@@ -705,6 +949,7 @@
                 `);
             });
             const passed = correct >= 7;
+            challengeResults[2] = { passed: passed, score: correct, total: 10 };
             document.getElementById('results2').innerHTML = `
                 <div class="score ${passed ? 'pass' : 'fail'}">
                     ${passed ? 'Challenge Passed' : 'Try Again'}
@@ -713,29 +958,36 @@
                 <div class="answer-list">${resultsHTML.join('')}</div>
             `;
             document.getElementById('results2').classList.add('show');
+            document.getElementById('submit2').disabled = true;
             document.getElementById('results2').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            checkAllCompleted();
         }
 
         // Initialize Challenge 3
         function initChallenge3() {
+            // Create shuffled arrays and maps
+            shuffledAnimals = shuffle(matchingData.animals.map((animal, idx) => ({ text: animal, originalIdx: idx })));
+            shuffledAdaptations = shuffle(matchingData.adaptations.map((adapt, idx) => ({ text: adapt, originalIdx: idx })));
+            
             const grid = document.getElementById('grid3');
             grid.innerHTML = `
                 <div class="matching-column">
                     <h3>Animals</h3>
-                    ${matchingData.animals.map((animal, i) => `
-                        <div class="matching-item" id="animal-${i}" onclick="selectMatch('animal', ${i})">${animal}</div>
+                    ${shuffledAnimals.map((animal, i) => `
+                        <div class="matching-item" id="animal-${i}" onclick="selectMatch('animal', ${i})">${animal.text}</div>
                     `).join('')}
                 </div>
                 <div class="matching-column">
                     <h3>Adaptations</h3>
-                    ${matchingData.adaptations.map((adapt, i) => `
-                        <div class="matching-item" id="adapt-${i}" onclick="selectMatch('adapt', ${i})">${adapt}</div>
+                    ${shuffledAdaptations.map((adapt, i) => `
+                        <div class="matching-item" id="adapt-${i}" onclick="selectMatch('adapt', ${i})">${adapt.text}</div>
                     `).join('')}
                 </div>
             `;
         }
 
         function selectMatch(type, index) {
+            if (challengeSubmitted[3]) return;
             if (type === 'animal') {
                 if (document.getElementById(`animal-${index}`).classList.contains('matched')) return;
                 if (selectedAnimal !== null) {
@@ -753,7 +1005,12 @@
             }
 
             if (selectedAnimal !== null && selectedAdaptation !== null) {
-                matches.push({ animal: selectedAnimal, adapt: selectedAdaptation });
+                matches.push({ 
+                    animal: selectedAnimal, 
+                    adapt: selectedAdaptation,
+                    animalOriginal: shuffledAnimals[selectedAnimal].originalIdx,
+                    adaptOriginal: shuffledAdaptations[selectedAdaptation].originalIdx
+                });
                 document.getElementById(`animal-${selectedAnimal}`).classList.add('matched');
                 document.getElementById(`adapt-${selectedAdaptation}`).classList.add('matched');
                 document.getElementById(`animal-${selectedAnimal}`).classList.remove('selected');
@@ -766,19 +1023,22 @@
         }
 
         function submitChallenge3() {
+            if (challengeSubmitted[3]) return;
+            challengeSubmitted[3] = true;
             let correct = 0;
             const resultsHTML = [];
             matches.forEach(match => {
-                const isCorrect = match.animal === match.adapt;
+                const isCorrect = match.animalOriginal === match.adaptOriginal;
                 if (isCorrect) correct++;
                 resultsHTML.push(`
                     <div class="answer-item ${isCorrect ? 'correct' : 'incorrect'}">
-                        <span>${matchingData.animals[match.animal]} → ${matchingData.adaptations[match.adapt]}</span>
+                        <span>${shuffledAnimals[match.animal].text} → ${shuffledAdaptations[match.adapt].text}</span>
                         <span>${isCorrect ? 'Correct' : 'Wrong'}</span>
                     </div>
                 `);
             });
             const passed = correct >= 5;
+            challengeResults[3] = { passed: passed, score: correct, total: 6 };
             document.getElementById('results3').innerHTML = `
                 <div class="score ${passed ? 'pass' : 'fail'}">
                     ${passed ? 'Challenge Passed' : 'Try Again'}
@@ -787,7 +1047,9 @@
                 <div class="answer-list">${resultsHTML.join('')}</div>
             `;
             document.getElementById('results3').classList.add('show');
+            document.getElementById('submit3').disabled = true;
             document.getElementById('results3').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            checkAllCompleted();
         }
 
         // Initialize Challenge 4
@@ -809,6 +1071,7 @@
         }
 
         function selectAnswer4(index, answer) {
+            if (challengeSubmitted[4]) return;
             userAnswers4[index] = answer;
             const card = document.getElementById(`card4-${index}`);
             card.className = 'animal-card';
@@ -818,6 +1081,8 @@
         }
 
         function submitChallenge4() {
+            if (challengeSubmitted[4]) return;
+            challengeSubmitted[4] = true;
             let correct = 0;
             const resultsHTML = [];
             plants.forEach((plant, index) => {
@@ -832,6 +1097,7 @@
                 `);
             });
             const passed = correct >= 7;
+            challengeResults[4] = { passed: passed, score: correct, total: 10 };
             document.getElementById('results4').innerHTML = `
                 <div class="score ${passed ? 'pass' : 'fail'}">
                     ${passed ? 'Challenge Passed' : 'Try Again'}
@@ -840,7 +1106,9 @@
                 <div class="answer-list">${resultsHTML.join('')}</div>
             `;
             document.getElementById('results4').classList.add('show');
+            document.getElementById('submit4').disabled = true;
             document.getElementById('results4').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            checkAllCompleted();
         }
 
         // Initialize all challenges
