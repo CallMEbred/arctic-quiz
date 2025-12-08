@@ -21,7 +21,6 @@
             overflow-x: hidden;
         }
 
-        /* Snowflake Animation */
         .snowflake {
             position: fixed;
             top: -10px;
@@ -577,10 +576,123 @@
     </style>
 </head>
 <body>
+    <script>
+        // Tab monitoring variables
+        let testStarted = false;
+        let tabSwitchDetected = false;
+
+        // State
+        let userAnswers1 = {};
+        let userAnswers2 = {};
+        let userAnswers4 = {};
+        let selectedAnimal = null;
+        let selectedAdaptation = null;
+        let matches = [];
+        let challengeResults = {
+            1: null,
+            2: null,
+            3: null,
+            4: null
+        };
+        let challengeSubmitted = {
+            1: false,
+            2: false,
+            3: false,
+            4: false
+        };
+        let shuffledAnimals = [];
+        let shuffledAdaptations = [];
+
+        // Accept warning and start monitoring
+        function acceptWarning() {
+            document.getElementById('warningModal').style.display = 'none';
+            testStarted = true;
+            startTabMonitoring();
+        }
+
+        // Monitor tab visibility
+        function startTabMonitoring() {
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('blur', handleWindowBlur);
+        }
+
+        function handleVisibilityChange() {
+            if (testStarted && !tabSwitchDetected && document.hidden) {
+                triggerCheatingDetection();
+            }
+        }
+
+        function handleWindowBlur() {
+            if (testStarted && !tabSwitchDetected) {
+                triggerCheatingDetection();
+            }
+        }
+
+        function triggerCheatingDetection() {
+            tabSwitchDetected = true;
+            
+            // Set all challenges as failed with 0 score
+            for (let i = 1; i <= 4; i++) {
+                challengeResults[i] = { passed: false, score: 0, total: i === 1 ? 15 : i === 3 ? 6 : 10 };
+                challengeSubmitted[i] = true;
+            }
+            
+            // Show cheating detection message
+            showCheatingScreen();
+        }
+
+        function showCheatingScreen() {
+            // Hide challenge selector and all challenge sections
+            document.getElementById('challengeSelector').style.display = 'none';
+            document.querySelectorAll('.challenge-section').forEach(s => s.classList.remove('active'));
+            
+            // Show final summary with cheating message
+            document.getElementById('finalSummary').classList.add('active');
+
+            // Update summary items as all failed
+            for (let i = 1; i <= 4; i++) {
+                const summaryItem = document.getElementById(`summary${i}`);
+                const status = summaryItem.querySelector('.summary-status');
+                summaryItem.classList.add('failed');
+                status.textContent = 'Disqualified (0/' + challengeResults[i].total + ')';
+            }
+
+            // Update final result with cheating message
+            const finalResult = document.getElementById('finalResult');
+            const finalScore = finalResult.querySelector('.final-score');
+            const finalMessage = finalResult.querySelector('.final-message');
+            
+            finalResult.classList.add('overall-fail');
+            finalScore.textContent = '0 / 4 - DISQUALIFIED';
+            finalScore.style.color = '#c62828';
+            finalMessage.innerHTML = '<strong style="color: #c62828; font-size: 1.4em;">CHEATING DETECTED!</strong><br><br>You switched tabs or left the page during the test. As warned, you have been automatically disqualified and received a score of 0/4. Academic integrity is essential.';
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+
+    <!-- Warning Modal -->
+    <div id="warningModal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; color: #1a3a52; padding: 40px; border-radius: 10px; max-width: 600px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+            <h2 style="font-size: 2.5em; margin-bottom: 20px; color: #c62828;">⚠️ WARNING ⚠️</h2>
+            <p style="font-size: 1.3em; line-height: 1.8; margin-bottom: 30px;">
+                This is a <strong>monitored assessment</strong>. If you switch tabs, minimize the window, or leave this page during the test, you will be <strong>automatically disqualified</strong> and receive a score of <strong>0/4</strong>.
+            </p>
+            <p style="font-size: 1.2em; margin-bottom: 30px; color: #c62828; font-weight: bold;">
+                Stay on this tab at all times!
+            </p>
+            <button onclick="acceptWarning()" style="background: #2e7d32; color: white; padding: 15px 40px; font-size: 1.3em; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-family: 'Georgia', serif;">
+                I Understand - Begin Test
+            </button>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>TUNDRA CHALLENGE</h1>
             <p class="subtitle">Test Your Arctic Knowledge</p>
+            <p style="color: #ffeb3b; font-weight: bold; margin-top: 15px; font-size: 1.1em;">⚠️ Tab switching is being monitored</p>
         </header>
 
         <div class="challenge-selector" id="challengeSelector">
@@ -759,30 +871,6 @@
             { name: "Arctic Willow", tundra: true }
         ];
 
-        // State
-        let userAnswers1 = {};
-        let userAnswers2 = {};
-        let userAnswers4 = {};
-        let selectedAnimal = null;
-        let selectedAdaptation = null;
-        let matches = [];
-        let challengeResults = {
-            1: null,
-            2: null,
-            3: null,
-            4: null
-        };
-        let challengeSubmitted = {
-            1: false,
-            2: false,
-            3: false,
-            4: false
-        };
-        let shuffledAnimals = [];
-        let shuffledAdaptations = [];
-        let animalIndexMap = {};
-        let adaptationIndexMap = {};
-
         function switchChallenge(num) {
             document.querySelectorAll('.challenge-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.challenge-btn').forEach(b => b.classList.remove('active'));
@@ -798,14 +886,10 @@
         }
 
         function showFinalSummary() {
-            // Hide challenge selector and all challenge sections
             document.getElementById('challengeSelector').style.display = 'none';
             document.querySelectorAll('.challenge-section').forEach(s => s.classList.remove('active'));
-            
-            // Show final summary
             document.getElementById('finalSummary').classList.add('active');
 
-            // Update summary items
             let passedCount = 0;
             for (let i = 1; i <= 4; i++) {
                 const summaryItem = document.getElementById(`summary${i}`);
@@ -821,7 +905,6 @@
                 }
             }
 
-            // Update final result
             const finalResult = document.getElementById('finalResult');
             const finalScore = finalResult.querySelector('.final-score');
             const finalMessage = finalResult.querySelector('.final-message');
@@ -839,11 +922,9 @@
                 finalMessage.textContent = 'You need to pass at least 3 out of 4 challenges to complete this checkpoint. Please try again to continue your journey.';
             }
 
-            // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Initialize Challenge 1
         function initChallenge1() {
             const grid = document.getElementById('grid1');
             animals.forEach((animal, index) => {
@@ -902,7 +983,6 @@
             checkAllCompleted();
         }
 
-        // Initialize Challenge 2
         function initChallenge2() {
             const grid = document.getElementById('grid2');
             triviaQuestions.forEach((q, index) => {
@@ -963,9 +1043,7 @@
             checkAllCompleted();
         }
 
-        // Initialize Challenge 3
         function initChallenge3() {
-            // Create shuffled arrays and maps
             shuffledAnimals = shuffle(matchingData.animals.map((animal, idx) => ({ text: animal, originalIdx: idx })));
             shuffledAdaptations = shuffle(matchingData.adaptations.map((adapt, idx) => ({ text: adapt, originalIdx: idx })));
             
@@ -1052,7 +1130,6 @@
             checkAllCompleted();
         }
 
-        // Initialize Challenge 4
         function initChallenge4() {
             const grid = document.getElementById('grid4');
             plants.forEach((plant, index) => {
@@ -1111,7 +1188,6 @@
             checkAllCompleted();
         }
 
-        // Initialize all challenges
         initChallenge1();
         initChallenge2();
         initChallenge3();
